@@ -1,13 +1,13 @@
 {
   "expo": {
-    "scheme": "acme",
-    "web": {
-      "bundler": "metro"
-    },
-    "plugins": [
-      "expo-router"
-    ],
     "name": "LitLearn",
-    "slug": "LitLearn"
+    "slug": "LitLearn",
+    "version": "1.0.0",
+    "ios": {
+      "buildNumber": "1"
+    },
+    "android": {
+      "versionCode": 1
+    }
   }
 }
