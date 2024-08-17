@@ -20,7 +20,7 @@ export const loginUser = async (credentials) => {
   try {
     const response = await axios.post(`${API_BASE_URL}/users/login`, credentials);
     const { token } = response.data;
-
+    console.log('Token received:', token);
     await AsyncStorage.setItem('token', token);
     return response.data;
   } catch (error) {
@@ -29,62 +29,60 @@ export const loginUser = async (credentials) => {
   }
 };
 
-// Fetch all lessons
+// User Logout
+export const logoutUser = async () => {
+  try {
+    const token = await AsyncStorage.getItem('token');
+    if (!token) {
+      throw new Error('No token found');
+    }
+
+    console.log('Token:', token); // Debugging log
+
+    const response = await axios.post(`${API_BASE_URL}/users/logout`, {}, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+
+    console.log('Logout response:', response); // Debugging log
+
+    await AsyncStorage.removeItem('token');
+    return response.data;
+  } catch (error) {
+    console.error('Logout error:', error);
+    throw error;
+  }
+};
+
+// Fetch Lessons
 export const fetchLessons = async () => {
   try {
     const token = await AsyncStorage.getItem('token');
     const response = await axios.get(`${API_BASE_URL}/lessons`, {
-      headers: { Authorization: `Bearer ${token}` },
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     });
     return response.data;
   } catch (error) {
-    console.error('Error fetching lessons:', error);
+    console.error('Fetch lessons error:', error);
     throw error;
   }
 };
 
-// Fetch exercises based on the lesson ID
-export const fetchExercises = async (lessonId) => {
+export const fetchLessonDetail = async (lessonId) => {
   try {
     const token = await AsyncStorage.getItem('token');
-    const response = await axios.get(`${API_BASE_URL}/exercises`, {
-      headers: { Authorization: `Bearer ${token}` },
-      params: { lessonId },
+    const response = await axios.get(`${API_BASE_URL}/lessons/${lessonId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json; charset=utf-8',
+      },
     });
     return response.data;
   } catch (error) {
-    console.error('Error fetching exercises:', error);
-    throw error;
-  }
-};
-
-// Logout user
-export const logoutUser = async () => {
-  try {
-    const token = await AsyncStorage.getItem('token');
-    const response = await axios.post(`${API_BASE_URL}/users/logout`, {}, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    await AsyncStorage.removeItem('token');
-    return response.data;
-  } catch (error) {
-    console.error('Error logging out:', error);
-    throw error;
-  }
-};
-
-// Submit story analysis for a specific exercise
-export const submitStoryAnalysis = async (exerciseId, analysis) => {
-  try {
-    const token = await AsyncStorage.getItem('token');
-    const response = await axios.post(
-      `${API_BASE_URL}/story-analysis`,
-      { exerciseId, analysis },
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-    return response.data;
-  } catch (error) {
-    console.error('Error submitting story analysis:', error);
+    console.error('Fetch lesson detail error:', error);
     throw error;
   }
 };

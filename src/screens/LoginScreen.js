@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
 import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 
 const LoginScreen = () => {
@@ -14,14 +15,20 @@ const LoginScreen = () => {
     try {
       const response = await axios.post('http://192.168.100.96:3001/api/users/login', { username, password });
       const { token, userId } = response.data;
-      // Store the token and userId in local storage or a secure way
       console.log(`Logged in successfully! Token: ${token}, UserId: ${userId}`);
+      await AsyncStorage.setItem('token', token); // Store the token in AsyncStorage
       navigation.reset({ index: 0, routes: [{ name: 'MainDashboard' }] });
     } catch (error) {
-      if (error.response && error.response.status === 401) {
-        setError('Invalid username or password');
+      if (error.response) {
+        if (error.response.status === 401) {
+          setError('Invalid username or password');
+        } else if (error.response.status === 500) {
+          setError('Server error. Please try again later.');
+        } else {
+          setError(`Unexpected error: ${error.response.status}`);
+        }
       } else {
-        setError('An error occurred. Please try again later.');
+        setError('Network error. Please check your connection.');
       }
     }
   };

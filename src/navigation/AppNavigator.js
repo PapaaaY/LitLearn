@@ -11,20 +11,22 @@ import ProgressScreen from '../screens/ProgressScreen';
 import MainDashboard from '../screens/MainDashboard';
 import SignupScreen from '../screens/SignupScreen';
 import LoginScreen from '../screens/LoginScreen';
+import ChangeCredentialsScreen from '../screens/ChangeCredentialsScreen';
+import HelpScreen from '../screens/HelpScreen'; // Import HelpScreen
+import LessonDetailScreen from '../screens/LessonDetailScreen';
 
 const Stack = createStackNavigator();
 
 export default function AppNavigator() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
-  const navigation = useNavigation(); 
+  const navigation = useNavigation();
 
   useEffect(() => {
-    // Check if user is logged in
     const checkAuth = async () => {
       try {
         const token = await AsyncStorage.getItem('token');
-        console.log('Token retrieved:', token); 
+        console.log('Token retrieved:', token);
         setIsAuthenticated(!!token);
       } catch (error) {
         console.error('Error checking auth:', error);
@@ -38,7 +40,7 @@ export default function AppNavigator() {
 
   const handleLogin = () => {
     setIsAuthenticated(true);
-    navigation.navigate('MainDashboard'); 
+    navigation.navigate('MainDashboard');
   };
 
   const handleLogout = () => {
@@ -46,25 +48,22 @@ export default function AppNavigator() {
   };
 
   if (loading) {
-    return null; 
+    return null;
   }
 
   return (
     <Stack.Navigator>
-      {/* Initial screen */}
       <Stack.Screen name="Welcome" component={WelcomeScreen} options={{ headerShown: false }} />
-
-      {/* Authentication Screens */}
       <Stack.Screen name="Login" component={LoginScreen} options={{ onLogin: handleLogin }} />
       <Stack.Screen name="Signup" component={SignupScreen} options={{ onLogin: handleLogin }} />
       <Stack.Screen name="MainDashboard" component={MainDashboard} options={{ headerShown: false }} />
-
-      {/* Main app screens after authentication */}
+      <Stack.Screen name="ChangeCredentials" component={ChangeCredentialsScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="Help" component={HelpScreen} options={{ headerShown: false }} /> 
       {isAuthenticated ? (
         <>
-          
           <Stack.Screen name="Home" component={HomeScreen} />
           <Stack.Screen name="Lesson" component={LessonScreen} />
+          <Stack.Screen name="LessonDetail" component={LessonDetailScreen} />
           <Stack.Screen name="Exercise" component={ExerciseScreen} />
           <Stack.Screen name="StoryAnalysis" component={StoryAnalysis} />
           <Stack.Screen name="Progress" component={ProgressScreen} />

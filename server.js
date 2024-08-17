@@ -11,13 +11,19 @@ const connection = mysql.createPool({
   host: 'localhost',
   user: 'litlearn_user',
   password: 'Panama15!',
-  database: 'litlearn'
+  database: 'litlearn',
+  charset: 'utf8mb4',
 });
 
 const cors = require('cors');
 app.use(cors());
 
 app.use(express.json());
+
+app.use((req, res, next) => {
+  res.setHeader('Content-Type', 'application/json; charset=utf-8');
+  next();
+});
 
 (async () => {
   try {
@@ -146,16 +152,63 @@ app.get('/api/progress/:userId', authenticateToken, async (req, res) => {
   }
 });
 
-app.post('/api/users/logout', authenticateToken, async (req, res) => {
+app.post('/api/users/logout', authenticateToken, (req, res) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (!token) {
+    console.error('No token provided');
+    return res.sendStatus(403);
+  }
+
+  jwt.verify(token, secretKey, (err, user) => {
+    if (err) {
+      console.error('Token verification failed:', err);
+      return res.sendStatus(403);
+    }
+    // Handle logout logic here
+    console.log('Logout successful for user:', user);
+    res.sendStatus(200);
+  });
+});
+
+// Get Lesson by ID Endpoint (Protected)
+app.get('/api/lessons/:id', authenticateToken, async (req, res) => {
+  const { id } = req.params;
+
   try {
-    res.status(200).json({ message: 'Logged out successfully' });
+    const [rows] = await connection.execute('SELECT * FROM lessons WHERE id = ?', [id]);
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'Lesson not found' });
+    }
+
+    res.status(200).json(rows[0]);
   } catch (err) {
-    console.error('Error logging out:', err);
-    res.status(500).json({ error: 'Error logging out' });
+    console.error('Error retrieving lesson:', err);
+    res.status(500).json({ error: 'Error retrieving lesson' });
+  }
+});
+
+app.post('/api/users/change-credentials', authenticateToken, async (req, res) => {
+  const { username, password } = req.body;
+  const userId = req.user.id;
+
+  if (!username || !password) {
+    return res.status(400).json({ message: 'Username and password are required' });
+  }
+
+  try {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    await connection.execute('UPDATE users SET username = ?, password = ? WHERE id = ?', [username, hashedPassword, userId]);
+    res.status(200).json({ message: 'Credentials updated successfully' });
+  } catch (error) {
+    console.error('Error updating credentials:', error);
+    res.status(500).json({ message: 'Server error' });
   }
 });
 
 // Start the server
 app.listen(port, () => {
-  console.log(`Server is running at http://localhost:${port}`);
+  console.log(`Server is running at http://192.168.100.96:${port}`);
 });
