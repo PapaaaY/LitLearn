@@ -19,7 +19,7 @@ const ChangeCredentialsScreen = () => {
 
     try {
       const token = await AsyncStorage.getItem('token');
-      const response = await axios.post('http://192.168.100.96:3001/api/users/change-credentials', { username, password }, {
+      const response = await axios.post('http://192.168.100.167:3001/api/users/change-credentials', { username, password }, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -39,6 +39,9 @@ const ChangeCredentialsScreen = () => {
 
   return (
     <View style={styles.container}>
+      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+        <Text style={styles.backButtonText}>Back</Text>
+      </TouchableOpacity>
       <Text style={styles.header}>Change Credentials</Text>
       <TextInput
         placeholder="New Username"
@@ -77,6 +80,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#333',
+  },
+  backButton: {
+    position: 'absolute',
+    top: 40,
+    left: 20,
+    backgroundColor: '#444',
+    padding: 10,
+    borderRadius: 5,
+  },
+  backButtonText: {
+    color: '#fff',
+    fontSize: 16,
   },
   header: {
     fontSize: 24,

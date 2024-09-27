@@ -1,26 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
-import { fetchUnits } from '../services/api'; // Import the fetchUnits function
+import { fetchExercisesByUnit } from '../services/api'; // Use the fetchExercisesByUnit function
 
-const ExerciseScreen = ({ navigation }) => {
-  const [units, setUnits] = useState([]);
+const UnitExerciseScreen = ({ route, navigation }) => {
+  const { unitId } = route.params;
+  const [exercises, setExercises] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const loadUnits = async () => {
+    const fetchExercises = async () => {
       try {
-        const unitsData = await fetchUnits();
-        setUnits(unitsData);
+        const exercisesData = await fetchExercisesByUnit(unitId);
+        setExercises(exercisesData);
       } catch (error) {
-        setError('Failed to load units');
+        setError('Failed to load exercises');
       } finally {
         setLoading(false);
       }
     };
 
-    loadUnits();
-  }, []);
+    fetchExercises();
+  }, [unitId]);
 
   if (loading) {
     return (
@@ -41,16 +42,16 @@ const ExerciseScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Units</Text>
+      <Text style={styles.title}>Exercises</Text>
       <FlatList
-        data={units}
+        data={exercises}
         keyExtractor={item => item.id.toString()}
         renderItem={({ item }) => (
           <TouchableOpacity
-            style={styles.unitItem}
-            onPress={() => navigation.navigate('UnitExercise', { unitId: item.id })}
+            style={styles.exerciseItem}
+            onPress={() => navigation.navigate('ExerciseDetail', { exerciseId: item.id })}
           >
-            <Text style={styles.unitText}>Unit {item.id}: {item.title}</Text>
+            <Text style={styles.exerciseText}>Exercise {item.exercise_number}</Text>
           </TouchableOpacity>
         )}
       />
@@ -85,7 +86,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
-  unitItem: {
+  exerciseItem: {
     backgroundColor: '#444',
     padding: 15,
     borderRadius: 10,
@@ -96,10 +97,10 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     elevation: 5,
   },
-  unitText: {
+  exerciseText: {
     color: '#fff',
     fontSize: 18,
   },
 });
 
-export default ExerciseScreen;
+export default UnitExerciseScreen;

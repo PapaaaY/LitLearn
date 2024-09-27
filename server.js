@@ -61,7 +61,11 @@ app.post('/api/users/signup', async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const [insertResult] = await connection.execute('INSERT INTO users (username, password) VALUES (?, ?)', [username, hashedPassword]);
-    res.status(201).json({ message: 'User registered successfully' });
+
+    const userId = insertResult.insertId;
+    const token = jwt.sign({ id: userId, username }, secretKey, { expiresIn: '1h' });
+
+    res.status(201).json({ message: 'User registered successfully', token, userId });
   } catch (err) {
     console.error('Error registering user:', err);
     res.status(500).json({ error: 'Error registering user' });
@@ -72,18 +76,26 @@ app.post('/api/users/login', async (req, res) => {
   const { username, password } = req.body;
 
   try {
+    console.log(`Attempting login for username: ${username}`);
     const [resultSet] = await connection.execute('SELECT * FROM users WHERE username = ?', [username]);
     if (resultSet.length === 0) {
-      return res.status(401).json({ message: 'Invalid credentials' });
+      console.log('No user found with the provided username');
+      return res.status(401).json({ message: 'Invalid username or password' });
     }
 
     const user = resultSet[0];
+    console.log(`User found: ${JSON.stringify(user)}`);
+
     const isPasswordValid = await bcrypt.compare(password, user.password);
+    console.log(`Password comparison result: ${isPasswordValid}`);
+
     if (!isPasswordValid) {
-      return res.status(401).json({ message: 'Invalid credentials' });
+      console.log('Password comparison failed');
+      return res.status(401).json({ message: 'Invalid username or password' });
     }
 
     const token = jwt.sign({ id: user.id, username: user.username }, secretKey, { expiresIn: '1h' });
+    console.log(`Login successful for username: ${username}, token generated: ${token}`);
     res.status(200).json({ message: 'Login successful', token, userId: user.id });
   } catch (err) {
     console.error('Error logging in:', err);
@@ -127,15 +139,53 @@ app.post('/api/lessons', authenticateToken, async (req, res) => {
 });
 
 // Exercise Endpoint (Protected)
-app.post('/api/exercises', authenticateToken, async (req, res) => {
-  const { lessonId, exercise } = req.body;
+// Fetch Exercises by Unit ID Endpoint (Protected)
+app.get('/api/exercises', authenticateToken, async (req, res) => {
+  const { unitId } = req.query;
 
   try {
-    await connection.execute('INSERT INTO exercises (lesson_id, exercise) VALUES (?, ?)', [lessonId, exercise]);
-    res.status(201).json({ message: 'Exercise added successfully' });
+    const [results] = await connection.execute('SELECT * FROM exercises WHERE unit_id = ?', [unitId]);
+    res.status(200).json(results);
   } catch (err) {
-    console.error('Error adding exercise:', err);
-    res.status(500).json({ error: 'Error adding exercise' });
+    console.error('Error fetching exercises:', err);
+    res.status(500).json({ error: 'Error fetching exercises' });
+  }
+});
+
+// Fetch Exercise by ID Endpoint (Protected)
+app.get('/api/exercises/:id', authenticateToken, async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const [results] = await connection.execute('SELECT * FROM exercises WHERE id = ?', [id]);
+    if (results.length === 0) {
+      return res.status(404).json({ error: 'Exercise not found' });
+    }
+    res.status(200).json(results[0]);
+  } catch (err) {
+    console.error('Error fetching exercise:', err);
+    res.status(500).json({ error: 'Error fetching exercise' });
+  }
+});
+
+// Validate Exercise Answer Endpoint (Protected)
+app.post('/api/exercises/:id/validate', authenticateToken, async (req, res) => {
+  const { id } = req.params;
+  const { answer } = req.body;
+
+  try {
+    const [results] = await connection.execute('SELECT * FROM exercises WHERE id = ?', [id]);
+    if (results.length === 0) {
+      return res.status(404).json({ error: 'Exercise not found' });
+    }
+
+    const exercise = results[0];
+    const isCorrect = exercise.correct_answer === answer;
+
+    res.status(200).json({ message: isCorrect ? 'Correct answer!' : 'Incorrect answer.', isCorrect });
+  } catch (err) {
+    console.error('Error validating answer:', err);
+    res.status(500).json({ error: 'Error validating answer' });
   }
 });
 
@@ -208,7 +258,18 @@ app.post('/api/users/change-credentials', authenticateToken, async (req, res) =>
   }
 });
 
+// Fetch Units Endpoint (Protected)
+app.get('/api/units', authenticateToken, async (req, res) => {
+  try {
+    const [results] = await connection.execute('SELECT * FROM units');
+    res.status(200).json(results);
+  } catch (err) {
+    console.error('Error fetching units:', err);
+    res.status(500).json({ error: 'Error fetching units' });
+  }
+});
+
 // Start the server
 app.listen(port, () => {
-  console.log(`Server is running at http://192.168.100.96:${port}`);
+  console.log(`Server is running at http://192.168.100.167:${port}`);
 });

@@ -10,7 +10,7 @@ export default function HomeScreen({ navigation }) {
         <Text style={styles.buttonText}>Go to Lessons</Text>
       </TouchableOpacity>
       
-      <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Exercise')}>
+      <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Exercise', { lessonId: 1 })}>
         <Text style={styles.buttonText}>Go to Exercises</Text>
       </TouchableOpacity>
       

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
 import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 
 const SignupScreen = () => {
@@ -12,13 +13,19 @@ const SignupScreen = () => {
 
   const createUser = async (userData) => {
     try {
-      const response = await axios.post('http://192.168.100.96:3001/api/users/signup', userData);
+      const response = await axios.post('http://192.168.100.167:3001/api/users/signup', userData);
       const { token, userId } = response.data;
-      // Store the token and userId in local storage or a secure way
+
+      if (!token) {
+        throw new Error('Token not received');
+      }
+
+      await AsyncStorage.setItem('token', token); // Store the token in AsyncStorage
       console.log(`Signed up successfully! Token: ${token}, UserId: ${userId}`);
       return true;
     } catch (error) {
-      setError(error.message);
+      console.error('Signup error:', error.response ? error.response.data : error.message);
+      setError(error.response ? error.response.data.error : error.message);
       return false;
     }
   };
@@ -29,23 +36,20 @@ const SignupScreen = () => {
       setError('Passwords do not match');
       return;
     }
-  
+
     try {
-      await createUser({ username, password });
-      console.log(`Signed up successfully!`);
-      // Navigate to MainDashboardScreen after successful signup
-      navigation.navigate('MainDashboard');
-    } catch (error) {
-      if (error.response && error.response.status === 409) {
-        setError('Username already exists. Please choose a different one.');
-      } else if (error.response && error.response.status === 422) {
-        setError('Password has already been used. Please choose a different one.');
-      } else {
-        setError(error.message);
+      const success = await createUser({ username, password });
+      if (success) {
+        console.log(`Signed up successfully!`);
+        // Navigate to MainDashboardScreen after successful signup
+        navigation.reset({ index: 0, routes: [{ name: 'MainDashboard' }] });
       }
+    } catch (error) {
+      console.error('Error during signup:', error);
+      setError(error.message);
     }
   };
-  
+
   return (
     <View style={styles.container}>
       <Text style={styles.header}>LitLearn</Text>
@@ -108,11 +112,14 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     textAlign: 'center',
     backgroundColor: '#fff', // White input background
+    marginBottom: 10, // Add margin bottom to separate inputs
+    width: '80%', // Make input fields take up 80% of the container width
   },
   button: {
     backgroundColor: '#666', // Dark grey button background
     padding: 10,
     borderRadius: 5,
+    marginBottom: 10, // Add margin bottom to separate button from error message
   },
   buttonText: {
     color: '#fff', // White button text

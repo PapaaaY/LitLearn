@@ -6,15 +6,16 @@ import WelcomeScreen from '../screens/WelcomeScreen';
 import HomeScreen from '../screens/homescreen';
 import LessonScreen from '../screens/LessonScreen';
 import ExerciseScreen from '../screens/ExerciseScreen';
+import UnitExerciseScreen from '../screens/UnitExerciseScreen';
+import ExerciseDetailScreen from '../screens/ExerciseDetailScreen';
 import StoryAnalysis from '../screens/StoryAnalysis';
 import ProgressScreen from '../screens/ProgressScreen';
 import MainDashboard from '../screens/MainDashboard';
 import SignupScreen from '../screens/SignupScreen';
 import LoginScreen from '../screens/LoginScreen';
 import ChangeCredentialsScreen from '../screens/ChangeCredentialsScreen';
-import HelpScreen from '../screens/HelpScreen'; // Import HelpScreen
-import LessonDetailScreen from '../screens/LessonDetailScreen';
-
+import HelpScreen from '../screens/HelpScreen';
+import LessonDetailScreen from '../screens/LessonDetailScreen'; // Adjust the path as necessary
 const Stack = createStackNavigator();
 
 export default function AppNavigator() {
@@ -58,13 +59,15 @@ export default function AppNavigator() {
       <Stack.Screen name="Signup" component={SignupScreen} options={{ onLogin: handleLogin }} />
       <Stack.Screen name="MainDashboard" component={MainDashboard} options={{ headerShown: false }} />
       <Stack.Screen name="ChangeCredentials" component={ChangeCredentialsScreen} options={{ headerShown: false }} />
-      <Stack.Screen name="Help" component={HelpScreen} options={{ headerShown: false }} /> 
+      <Stack.Screen name="Help" component={HelpScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="Home" component={HomeScreen} />
       {isAuthenticated ? (
         <>
-          <Stack.Screen name="Home" component={HomeScreen} />
           <Stack.Screen name="Lesson" component={LessonScreen} />
           <Stack.Screen name="LessonDetail" component={LessonDetailScreen} />
           <Stack.Screen name="Exercise" component={ExerciseScreen} />
+          <Stack.Screen name="UnitExercise" component={UnitExerciseScreen} />
+          <Stack.Screen name="ExerciseDetail" component={ExerciseDetailScreen} />
           <Stack.Screen name="StoryAnalysis" component={StoryAnalysis} />
           <Stack.Screen name="Progress" component={ProgressScreen} />
         </>

@@ -28,9 +28,13 @@ const MainDashboardScreen = ({ navigation }) => {
   const handleLogout = useCallback(async () => {
     try {
       await logoutUser();
+      await AsyncStorage.removeItem('token');
       setToken(null);
       setIsLoggedIn(false);
-      navigation.navigate('Login');
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'Welcome' }],
+      });
     } catch (error) {
       console.error('Error logging out:', error);
     }
@@ -140,4 +144,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default MainDashboardScreen;
+export default MainDashboardScreen; 
