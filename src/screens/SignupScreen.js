@@ -13,7 +13,7 @@ const SignupScreen = () => {
 
   const createUser = async (userData) => {
     try {
-      const response = await axios.post('http://192.168.100.167:3001/api/users/signup', userData);
+      const response = await axios.post('http://172.16.90.122.1:3001/api/users/signup', userData);
       const { token, userId } = response.data;
 
       if (!token) {

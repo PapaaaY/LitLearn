@@ -140,12 +140,20 @@ app.post('/api/lessons', authenticateToken, async (req, res) => {
 
 // Exercise Endpoint (Protected)
 // Fetch Exercises by Unit ID Endpoint (Protected)
+// server.js
+// Fetch Exercises by Unit ID Endpoint (Protected)
 app.get('/api/exercises', authenticateToken, async (req, res) => {
   const { unitId } = req.query;
 
   try {
-    const [results] = await connection.execute('SELECT * FROM exercises WHERE unit_id = ?', [unitId]);
-    res.status(200).json(results);
+    const [results] = await connection.execute(`
+      SELECT exercises.*, units.name AS unit_name
+      FROM exercises
+      JOIN units ON exercises.unit_id = units.id
+      WHERE exercises.unit_id = ?
+    `, [unitId]);
+    console.log('Exercises fetched:', results); // Debugging log
+    res.json(results);
   } catch (err) {
     console.error('Error fetching exercises:', err);
     res.status(500).json({ error: 'Error fetching exercises' });
@@ -259,6 +267,7 @@ app.post('/api/users/change-credentials', authenticateToken, async (req, res) =>
 });
 
 // Fetch Units Endpoint (Protected)
+// server.js
 app.get('/api/units', authenticateToken, async (req, res) => {
   try {
     const [results] = await connection.execute('SELECT * FROM units');
@@ -271,5 +280,5 @@ app.get('/api/units', authenticateToken, async (req, res) => {
 
 // Start the server
 app.listen(port, () => {
-  console.log(`Server is running at http://192.168.100.167:${port}`);
+  console.log(`Server is running at http://172.16.90.122:${port}`);
 });

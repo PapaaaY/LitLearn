@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
-import { fetchExercisesByUnit } from '../services/api'; // Use the fetchExercisesByUnit function
+import { fetchExercisesByUnit } from '../services/api';
 
 const UnitExerciseScreen = ({ route, navigation }) => {
   const { unitId } = route.params;
@@ -12,7 +12,14 @@ const UnitExerciseScreen = ({ route, navigation }) => {
     const fetchExercises = async () => {
       try {
         const exercisesData = await fetchExercisesByUnit(unitId);
-        setExercises(exercisesData);
+        console.log('Fetched Exercises:', exercisesData); // Debugging log
+
+        // Filter unique exercises by exercise_number
+        const uniqueExercises = exercisesData.filter((exercise, index, self) =>
+          index === self.findIndex((e) => e.exercise_number === exercise.exercise_number)
+        );
+
+        setExercises(uniqueExercises);
       } catch (error) {
         setError('Failed to load exercises');
       } finally {

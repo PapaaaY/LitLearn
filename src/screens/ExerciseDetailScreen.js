@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Text, Button, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { fetchExerciseById, validateExerciseAnswer } from '../services/api';
 
 const ExerciseDetailScreen = ({ route }) => {
   const { exerciseId } = route.params;
   const [exercise, setExercise] = useState(null);
-  const [answers, setAnswers] = useState({});
+  const [selectedOption, setSelectedOption] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [result, setResult] = useState(null);
@@ -14,6 +14,7 @@ const ExerciseDetailScreen = ({ route }) => {
     const fetchExercise = async () => {
       try {
         const exerciseData = await fetchExerciseById(exerciseId);
+        console.log('Fetched Exercise:', exerciseData); // Debugging log
         setExercise(exerciseData);
       } catch (error) {
         setError('Failed to load exercise');
@@ -25,16 +26,17 @@ const ExerciseDetailScreen = ({ route }) => {
     fetchExercise();
   }, [exerciseId]);
 
-  const handleInputChange = (questionId, value) => {
-    setAnswers({ ...answers, [questionId]: value });
-  };
-
   const handleSubmit = async () => {
+    if (selectedOption === null) {
+      setError('Please select an option');
+      return;
+    }
+
     try {
-      const response = await validateExerciseAnswer(exerciseId, answers);
+      const response = await validateExerciseAnswer(exerciseId, selectedOption);
       setResult(response);
     } catch (error) {
-      setError('Failed to validate answers');
+      setError('Failed to validate answer');
     }
   };
 
@@ -58,20 +60,28 @@ const ExerciseDetailScreen = ({ route }) => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Exercise {exercise.exercise_number}</Text>
-      {exercise.questions.map((question, index) => (
-        <View key={question.id} style={styles.questionContainer}>
-          <Text style={styles.questionText}>{index + 1}. {question.question}</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter your answer"
-            value={answers[question.id] || ''}
-            onChangeText={(value) => handleInputChange(question.id, value)}
-          />
-        </View>
-      ))}
+      <Text style={styles.questionText}>{exercise.question}</Text>
+      <TouchableOpacity
+        style={styles.option}
+        onPress={() => setSelectedOption('A')}
+      >
+        <Text style={styles.optionText}>{exercise.option_a}</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.option}
+        onPress={() => setSelectedOption('B')}
+      >
+        <Text style={styles.optionText}>{exercise.option_b}</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.option}
+        onPress={() => setSelectedOption('C')}
+      >
+        <Text style={styles.optionText}>{exercise.option_c}</Text>
+      </TouchableOpacity>
       <Button title="Submit" onPress={handleSubmit} />
       {result && (
-        <Text style={styles.resultText}>Score: {result.score}</Text>
+        <Text style={styles.resultText}>{result.message}</Text>
       )}
     </View>
   );
@@ -89,20 +99,20 @@ const styles = StyleSheet.create({
     color: '#fff',
     marginBottom: 20,
   },
-  questionContainer: {
-    marginBottom: 20,
-  },
   questionText: {
     fontSize: 18,
     color: '#fff',
-    marginBottom: 10,
-  },
-  input: {
-    backgroundColor: '#555',
-    color: '#fff',
-    padding: 10,
-    borderRadius: 5,
     marginBottom: 20,
+  },
+  option: {
+    backgroundColor: '#444',
+    padding: 15,
+    borderRadius: 10,
+    marginBottom: 15,
+  },
+  optionText: {
+    color: '#fff',
+    fontSize: 18,
   },
   resultText: {
     fontSize: 18,

@@ -19,7 +19,7 @@ const ChangeCredentialsScreen = () => {
 
     try {
       const token = await AsyncStorage.getItem('token');
-      const response = await axios.post('http://192.168.100.167:3001/api/users/change-credentials', { username, password }, {
+      const response = await axios.post('http://172.16.90.122:3001/api/users/change-credentials', { username, password }, {
         headers: {
           'Authorization': `Bearer ${token}`
         }

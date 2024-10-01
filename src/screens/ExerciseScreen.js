@@ -50,7 +50,7 @@ const ExerciseScreen = ({ navigation }) => {
             style={styles.unitItem}
             onPress={() => navigation.navigate('UnitExercise', { unitId: item.id })}
           >
-            <Text style={styles.unitText}>Unit {item.id}: {item.title}</Text>
+            <Text style={styles.unitText}>{item.title} - {item.unit_name}</Text>
           </TouchableOpacity>
         )}
       />

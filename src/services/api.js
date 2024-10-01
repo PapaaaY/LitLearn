@@ -2,7 +2,7 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const API_BASE_URL = 'http://192.168.100.167:3001/api'; // Replace with your IP address
+const API_BASE_URL = 'http://172.16.90.122:3001/api'; // Replace with your IP address
 
 // User Signup
 export const createUser = async (userData) => {
@@ -88,6 +88,8 @@ export const fetchLessonDetail = async (lessonId) => {
 };
 
 // Fetch Units
+// src/services/api.js
+// Fetch Units
 export const fetchUnits = async () => {
   try {
     const token = await AsyncStorage.getItem('token');
@@ -103,7 +105,7 @@ export const fetchUnits = async () => {
   }
 };
 
-// Fetch Exercises by Unit ID
+// Fetch Exercises by Unit
 // src/services/api.js
 export const fetchExercisesByUnit = async (unitId) => {
   try {
@@ -113,7 +115,12 @@ export const fetchExercisesByUnit = async (unitId) => {
         Authorization: `Bearer ${token}`,
       },
     });
-    return response.data;
+    // Ensure unique exercises
+    const uniqueExercises = response.data.filter((exercise, index, self) =>
+      index === self.findIndex((e) => e.id === exercise.id)
+    );
+    console.log('Unique Exercises:', uniqueExercises); // Debugging log
+    return uniqueExercises;
   } catch (error) {
     console.error('Fetch exercises error:', error);
     throw error;
