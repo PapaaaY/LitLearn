@@ -3,18 +3,19 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import WelcomeScreen from '../screens/WelcomeScreen';
-import HomeScreen from '../screens/homescreen';
+import HomeScreen from '../screens/homeScreen';
 import LessonScreen from '../screens/LessonScreen';
 import ExerciseScreen from '../screens/ExerciseScreen';
 import UnitExerciseScreen from '../screens/UnitExerciseScreen';
 import ExerciseDetailScreen from '../screens/ExerciseDetailScreen';
-import StoryAnalysis from '../screens/StoryAnalysis';
+import StoryAnalysisScreen from '../screens/StoryAnalysisScreen'; // Update import
 import ProgressScreen from '../screens/ProgressScreen';
 import MainDashboard from '../screens/MainDashboard';
 import SignupScreen from '../screens/SignupScreen';
 import LoginScreen from '../screens/LoginScreen';
 import ChangeCredentialsScreen from '../screens/ChangeCredentialsScreen';
 import HelpScreen from '../screens/HelpScreen';
+import ScoreScreen from '../screens/ScoreScreen'; // Add this import
 import LessonDetailScreen from '../screens/LessonDetailScreen'; // Adjust the path as necessary
 const Stack = createStackNavigator();
 
@@ -61,6 +62,7 @@ export default function AppNavigator() {
       <Stack.Screen name="ChangeCredentials" component={ChangeCredentialsScreen} options={{ headerShown: false }} />
       <Stack.Screen name="Help" component={HelpScreen} options={{ headerShown: false }} />
       <Stack.Screen name="Home" component={HomeScreen} />
+      <Stack.Screen name="ScoreScreen" component={ScoreScreen} options={{ headerShown: false }} />
       {isAuthenticated ? (
         <>
           <Stack.Screen name="Lesson" component={LessonScreen} />
@@ -68,7 +70,7 @@ export default function AppNavigator() {
           <Stack.Screen name="Exercise" component={ExerciseScreen} />
           <Stack.Screen name="UnitExercise" component={UnitExerciseScreen} />
           <Stack.Screen name="ExerciseDetail" component={ExerciseDetailScreen} />
-          <Stack.Screen name="StoryAnalysis" component={StoryAnalysis} />
+          <Stack.Screen name="StoryAnalysis" component={StoryAnalysisScreen} /> {/* Update this line */}
           <Stack.Screen name="Progress" component={ProgressScreen} />
         </>
       ) : null}

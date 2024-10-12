@@ -2,13 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, Button, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { fetchExerciseById, validateExerciseAnswer } from '../services/api';
 
-const ExerciseDetailScreen = ({ route }) => {
+const ExerciseDetailScreen = ({ route, navigation }) => {
   const { exerciseId } = route.params;
   const [exercise, setExercise] = useState(null);
   const [selectedOption, setSelectedOption] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [result, setResult] = useState(null);
+  const [submitted, setSubmitted] = useState(false);
+  const [currentQuestion, setCurrentQuestion] = useState(1);
+  const [score, setScore] = useState(0);
+  const totalQuestions = 5;
 
   useEffect(() => {
     const fetchExercise = async () => {
@@ -33,10 +37,26 @@ const ExerciseDetailScreen = ({ route }) => {
     }
 
     try {
-      const response = await validateExerciseAnswer(exerciseId, selectedOption);
+      const response = await validateExerciseAnswer(exercise.id, selectedOption);
       setResult(response);
+      setSubmitted(true);
+      if (response.isCorrect) {
+        setScore(score + 1);
+      }
     } catch (error) {
       setError('Failed to validate answer');
+    }
+  };
+
+  const handleNext = () => {
+    if (currentQuestion < totalQuestions) {
+      setCurrentQuestion(currentQuestion + 1);
+      setSubmitted(false);
+      setResult(null);
+      setSelectedOption(null);
+      navigation.navigate('ExerciseDetail', { exerciseId: exerciseId + 1 });
+    } else {
+      navigation.navigate('ScoreScreen', { score });
     }
   };
 
@@ -53,6 +73,14 @@ const ExerciseDetailScreen = ({ route }) => {
     return (
       <View style={styles.centered}>
         <Text style={styles.errorText}>{error}</Text>
+      </View>
+    );
+  }
+
+  if (!exercise) {
+    return (
+      <View style={styles.centered}>
+        <Text style={styles.errorText}>No exercise found</Text>
       </View>
     );
   }
@@ -82,6 +110,11 @@ const ExerciseDetailScreen = ({ route }) => {
       <Button title="Submit" onPress={handleSubmit} />
       {result && (
         <Text style={styles.resultText}>{result.message}</Text>
+      )}
+      {submitted && (
+        <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
+          <Text style={styles.nextButtonText}>Next</Text>
+        </TouchableOpacity>
       )}
     </View>
   );
@@ -132,6 +165,18 @@ const styles = StyleSheet.create({
   errorText: {
     color: '#ff4d4d',
     fontSize: 16,
+    fontWeight: 'bold',
+  },
+  nextButton: {
+    backgroundColor: '#00ff00',
+    padding: 15,
+    borderRadius: 10,
+    marginTop: 20,
+    alignItems: 'center',
+  },
+  nextButtonText: {
+    color: '#fff',
+    fontSize: 18,
     fontWeight: 'bold',
   },
 });

@@ -140,14 +140,13 @@ app.post('/api/lessons', authenticateToken, async (req, res) => {
 
 // Exercise Endpoint (Protected)
 // Fetch Exercises by Unit ID Endpoint (Protected)
-// server.js
-// Fetch Exercises by Unit ID Endpoint (Protected)
+
 app.get('/api/exercises', authenticateToken, async (req, res) => {
   const { unitId } = req.query;
 
   try {
     const [results] = await connection.execute(`
-      SELECT exercises.*, units.name AS unit_name
+      SELECT exercises.*, units.title AS unit_title
       FROM exercises
       JOIN units ON exercises.unit_id = units.id
       WHERE exercises.unit_id = ?
@@ -280,5 +279,5 @@ app.get('/api/units', authenticateToken, async (req, res) => {
 
 // Start the server
 app.listen(port, () => {
-  console.log(`Server is running at http://172.16.90.122:${port}`);
+  console.log(`Server is running at http://192.168.100.133:${port}`);
 });

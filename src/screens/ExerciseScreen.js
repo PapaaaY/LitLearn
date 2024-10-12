@@ -1,3 +1,4 @@
+// src/screens/ExerciseScreen.js
 import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { fetchUnits } from '../services/api'; // Import the fetchUnits function
@@ -50,7 +51,7 @@ const ExerciseScreen = ({ navigation }) => {
             style={styles.unitItem}
             onPress={() => navigation.navigate('UnitExercise', { unitId: item.id })}
           >
-            <Text style={styles.unitText}>{item.title} - {item.unit_name}</Text>
+            <Text style={styles.unitText}>{item.title}</Text>
           </TouchableOpacity>
         )}
       />

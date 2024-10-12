@@ -1,3 +1,4 @@
+// src/screens/UnitExerciseScreen.js
 import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { fetchExercisesByUnit } from '../services/api';
@@ -21,6 +22,7 @@ const UnitExerciseScreen = ({ route, navigation }) => {
 
         setExercises(uniqueExercises);
       } catch (error) {
+        console.error('Error fetching exercises:', error);
         setError('Failed to load exercises');
       } finally {
         setLoading(false);

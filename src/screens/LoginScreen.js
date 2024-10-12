@@ -13,7 +13,7 @@ const LoginScreen = () => {
   const handleLogin = async () => {
     console.log(`Logging in with username: ${username} and password: ${password}`);
     try {
-      const response = await axios.post('http://172.16.90.122:3001/api/users/login', { username, password });
+      const response = await axios.post('http://192.168.100.133:3001/api/users/login', { username, password });
       const { token, userId } = response.data;
       console.log(`Logged in successfully! Token: ${token}, UserId: ${userId}`);
       await AsyncStorage.setItem('token', token); // Store the token in AsyncStorage
