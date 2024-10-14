@@ -138,10 +138,10 @@ export const fetchExerciseById = async (exerciseId) => {
 };
 
 // Validate Exercise Answer
-export const validateExerciseAnswer = async (exerciseId, answer) => {
+export const validateExerciseAnswer = async (exerciseId, answer, lessonId) => {
   try {
     const token = await AsyncStorage.getItem('token');
-    const response = await axios.post(`${API_BASE_URL}/exercises/${exerciseId}/validate`, { answer }, {
+    const response = await axios.post(`${API_BASE_URL}/exercises/${exerciseId}/validate`, { answer, lessonId }, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -149,6 +149,73 @@ export const validateExerciseAnswer = async (exerciseId, answer) => {
     return response.data;
   } catch (error) {
     console.error('Validate answer error:', error);
+    throw error;
+  }
+};
+
+// Fetch Predefined Stories
+export const fetchPredefinedStories = async () => {
+  try {
+    const token = await AsyncStorage.getItem('token');
+    const response = await axios.get(`${API_BASE_URL}/stories`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Fetch predefined stories error:', error);
+    throw error;
+  }
+};
+
+// Fetch Story by ID
+// Fetch Story by ID
+export const fetchStoryById = async (storyId) => {
+  try {
+    const token = await AsyncStorage.getItem('token');
+    console.log('Fetching story by ID:', storyId); // Debugging log
+    const response = await axios.get(`${API_BASE_URL}/stories/${storyId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    console.log('Story fetched:', response.data); // Debugging log
+    return response.data;
+  } catch (error) {
+    console.error('Fetch story by ID error:', error);
+    throw error;
+  }
+};
+
+// Fetch current streak
+export const fetchStreak = async () => {
+  try {
+    const token = await AsyncStorage.getItem('token');
+    const response = await axios.get(`${API_BASE_URL}/streak`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data.streak;
+  } catch (error) {
+    console.error('Fetch streak error:', error);
+    throw error;
+  }
+};
+
+// Fetch progress data
+export const fetchProgress = async () => {
+  try {
+    const token = await AsyncStorage.getItem('token');
+    const response = await axios.get(`${API_BASE_URL}/progress`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Fetch progress error:', error);
     throw error;
   }
 };

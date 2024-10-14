@@ -178,21 +178,50 @@ app.get('/api/exercises/:id', authenticateToken, async (req, res) => {
 // Validate Exercise Answer Endpoint (Protected)
 app.post('/api/exercises/:id/validate', authenticateToken, async (req, res) => {
   const { id } = req.params;
-  const { answer } = req.body;
+  const { answer, lessonId } = req.body; // Assuming lessonId is passed in the request body
+  const userId = req.user.id;
 
   try {
-    const [results] = await connection.execute('SELECT * FROM exercises WHERE id = ?', [id]);
-    if (results.length === 0) {
-      return res.status(404).json({ error: 'Exercise not found' });
+    const [exerciseResult] = await connection.execute('SELECT * FROM exercises WHERE id = ?', [id]);
+    if (exerciseResult.length === 0) {
+      return res.status(404).json({ message: 'Exercise not found' });
     }
 
-    const exercise = results[0];
-    const isCorrect = exercise.correct_answer === answer;
+    const isCorrect = exerciseResult[0].correct_answer === answer;
+    const today = new Date().toISOString().split('T')[0];
 
-    res.status(200).json({ message: isCorrect ? 'Correct answer!' : 'Incorrect answer.', isCorrect });
+    // Ensure lessonId is not undefined
+    const lessonIdValue = lessonId !== undefined ? lessonId : null;
+
+    // Set default progress value
+    const progressValue = 0;
+
+    // Update progress table
+    await connection.execute(
+      'INSERT INTO progress (user_id, completed_date, exercise_id, lesson_id, progress) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE exercise_id = ?',
+      [userId, today, id, lessonIdValue, progressValue, id]
+    );
+
+    // Update streak table
+    const [streakResult] = await connection.execute('SELECT * FROM streak WHERE user_id = ?', [userId]);
+    if (streakResult.length === 0) {
+      await connection.execute('INSERT INTO streak (user_id, streak_count, last_completed) VALUES (?, 1, ?)', [userId, today]);
+    } else {
+      const lastCompleted = new Date(streakResult[0].last_completed);
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+
+      if (lastCompleted.toISOString().split('T')[0] === yesterday.toISOString().split('T')[0]) {
+        await connection.execute('UPDATE streak SET streak_count = streak_count + 1, last_completed = ? WHERE user_id = ?', [today, userId]);
+      } else if (lastCompleted.toISOString().split('T')[0] !== today) {
+        await connection.execute('UPDATE streak SET streak_count = 1, last_completed = ? WHERE user_id = ?', [today, userId]);
+      }
+    }
+
+    res.json({ isCorrect, message: isCorrect ? 'Correct answer!' : 'Incorrect answer.' });
   } catch (err) {
-    console.error('Error validating answer:', err);
-    res.status(500).json({ error: 'Error validating answer' });
+    console.error('Failed to validate answer:', err);
+    res.status(500).json({ message: 'Failed to validate answer' });
   }
 });
 
@@ -274,6 +303,61 @@ app.get('/api/units', authenticateToken, async (req, res) => {
   } catch (err) {
     console.error('Error fetching units:', err);
     res.status(500).json({ error: 'Error fetching units' });
+  }
+});
+// Add this endpoint to server.js
+
+app.get('/api/stories', authenticateToken, async (req, res) => {
+  try {
+    const [results] = await connection.execute('SELECT * FROM story_analysis');
+    res.status(200).json(results);
+  } catch (err) {
+    console.error('Error fetching stories:', err);
+    res.status(500).json({ error: 'Error fetching stories' });
+  }
+});
+
+app.get('/api/stories/:id', authenticateToken, async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const [results] = await connection.execute('SELECT * FROM story_analysis WHERE id = ?', [id]);
+    if (results.length === 0) {
+      return res.status(404).json({ error: 'Story not found' });
+    }
+    res.status(200).json(results[0]);
+  } catch (err) {
+    console.error('Error fetching story by ID:', err);
+    res.status(500).json({ error: 'Error fetching story by ID' });
+  }
+});
+
+// Fetch current streak
+app.get('/api/streak', authenticateToken, async (req, res) => {
+  const userId = req.user.id;
+
+  try {
+    const [streakResult] = await connection.execute('SELECT streak_count FROM streak WHERE user_id = ?', [userId]);
+    if (streakResult.length === 0) {
+      return res.json({ streak: 0 });
+    }
+    res.json({ streak: streakResult[0].streak_count });
+  } catch (err) {
+    console.error('Failed to fetch streak:', err);
+    res.status(500).json({ message: 'Failed to fetch streak' });
+  }
+});
+
+// Fetch progress data
+app.get('/api/progress', authenticateToken, async (req, res) => {
+  const userId = req.user.id;
+
+  try {
+    const [progressResult] = await connection.execute('SELECT completed_date, COUNT(*) as exercises_completed FROM progress WHERE user_id = ? GROUP BY completed_date', [userId]);
+    res.json(progressResult);
+  } catch (err) {
+    console.error('Failed to fetch progress:', err);
+    res.status(500).json({ message: 'Failed to fetch progress' });
   }
 });
 

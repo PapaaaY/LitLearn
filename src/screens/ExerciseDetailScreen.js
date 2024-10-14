@@ -37,7 +37,7 @@ const ExerciseDetailScreen = ({ route, navigation }) => {
     }
 
     try {
-      const response = await validateExerciseAnswer(exercise.id, selectedOption);
+      const response = await validateExerciseAnswer(exercise.id, selectedOption, exercise.lesson_id); // Pass lesson_id here
       setResult(response);
       setSubmitted(true);
       if (response.isCorrect) {
